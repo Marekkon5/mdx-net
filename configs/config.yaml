@@ -24,7 +24,7 @@ defaults:
 work_dir: ${hydra:runtime.cwd}
 
 # path to folder with data
-data_dir: /content/mdx-net/demdata
+data_dir: /mdx-net/data
 
 # use `python run.py debug=true` for easy debugging!
 # this will run 1 train, val and test loop with only 1 batch
@@ -38,4 +38,4 @@ print_config: True
 # disable python warnings if they annoy you
 ignore_warnings: True
 
-wandb_api_key: ff7268c2100047036a14a2c07468ea4b7ce5da31
+wandb_api_key: 44892aa9a649d650f64ea06c2ea842dbeb4bc10f

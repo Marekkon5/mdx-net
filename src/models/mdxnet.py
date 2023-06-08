@@ -77,7 +77,8 @@ class AbstractMDXNet(LightningModule):
 
     def stft(self, x):
         x = x.reshape([-1, self.chunk_size])
-        x = torch.stft(x, n_fft=self.n_fft, hop_length=self.hop_length, window=self.window, center=True)
+        x = torch.stft(x, n_fft=self.n_fft, hop_length=self.hop_length, window=self.window, center=True, return_complex=True)
+        x = torch.view_as_real(x)
         x = x.permute([0, 3, 1, 2])
         x = x.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, self.dim_c, self.n_bins, self.dim_t])
         return x[:, :, :self.dim_f]
@@ -86,6 +87,8 @@ class AbstractMDXNet(LightningModule):
         spec = torch.cat([spec, self.freq_pad.repeat([spec.shape[0], 1, 1, 1])], -2)
         spec = spec.reshape([-1, 2, 2, self.n_bins, self.dim_t]).reshape([-1, 2, self.n_bins, self.dim_t])
         spec = spec.permute([0, 2, 3, 1])
+        spec = spec.contiguous()
+        spec = torch.view_as_complex(spec)
         spec = torch.istft(spec, n_fft=self.n_fft, hop_length=self.hop_length, window=self.window, center=True)
         return spec.reshape([-1, 2, self.chunk_size])
 
@@ -128,7 +131,7 @@ class ConvTDFNet(AbstractMDXNet):
                 )
             )
             f = f // 2
-            c += g
+            c = c + g
 
         self.bottleneck_block = TFC_TDF(c, l, f, k, bn, bias=bias)
 
@@ -143,7 +146,7 @@ class ConvTDFNet(AbstractMDXNet):
                 )
             )
             f = f * 2
-            c -= g
+            c = c - g
 
             self.decoding_blocks.append(TFC_TDF(c, l, f, k, bn, bias=bias))
 
@@ -167,7 +170,7 @@ class ConvTDFNet(AbstractMDXNet):
 
         for i in range(self.n):
             x = self.us[i](x)
-            x *= ds_outputs[-i - 1]
+            x = x * ds_outputs[-i - 1]
             x = self.decoding_blocks[i](x)
 
         x = x.transpose(-1, -2)

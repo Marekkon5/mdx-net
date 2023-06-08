@@ -1,5 +1,33 @@
 # KUIELab-MDX-Net
 
+# Fork Info
+
+### Changes in this fork: 
+- Use our config / defaults
+- Use my wandb key in all the places
+- Updated dependencies
+- Updated to PyTorch 2.x, CUDA 11.8 / 12
+- Added a Docker container (do NOT run without Docker or modifying the paths).
+
+### Additional config:
+- `configs/experiment/multigpu_vocals.yaml`: batch_size, num_workers, seed
+- `configs/datamodule/musdb18_hq.yaml`: validation_set
+- `configs/config.yaml`: wandb_key, data_dir
+- `.env`: wandb_key, data_dir
+
+
+### Running:
+Requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+
+Put all folders with stems into `data/train`
+
+```
+docker-compose up
+```
+
+# Original:
+
+
 - This is a modified KUIELab-MDX-Net to train a vocal model with just the vocals and instrumental (no bass, drums or other stem needed)
 
 ## 0. Environment

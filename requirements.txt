@@ -1,6 +1,8 @@
 # --------- pytorch --------- #
-torch==1.9.1
-torchvision==0.10.1
+# Install later manually
+# torch
+# torchvision
+
 pytorch-lightning==1.3.8
 torchmetrics==0.6.2
 onnxruntime
@@ -8,15 +10,16 @@ onnxruntime-gpu
 onnx
 
 # --------- hydra --------- #
-hydra-core==1.1.0.rc1
-hydra-colorlog==1.1.0.dev1
-hydra-optuna-sweeper==1.1.0.dev2
+hydra-core
+hydra-colorlog
+hydra-optuna-sweeper
+
 # hydra-ax-sweeper==1.1.0
 # hydra-ray-launcher==0.1.2
 # hydra-submitit-launcher==1.1.0
 
 # --------- loggers --------- #
-wandb>=0.10.30
+wandb
 # neptune-client
 # mlflow
 # comet-ml

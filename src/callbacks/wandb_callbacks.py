@@ -70,7 +70,7 @@ class WatchModel(Callback):
 
     def on_train_start(self, trainer, pl_module):
         logger = get_wandb_logger(trainer=trainer)
-        logger.watch(model=trainer.model, log=self.log, log_freq=self.log_freq)
+        logger.watch(model=trainer.model, log="gradients", log_freq=self.log_freq)
 
 
 class UploadCodeAsArtifact(Callback):

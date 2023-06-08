@@ -143,8 +143,10 @@ dmypy.json
 data/
 logs/
 wandb/
-.env
 .autoenv
+
+# Include .env due to Docker
+# .env
 
 onnx/*
 outputs/*

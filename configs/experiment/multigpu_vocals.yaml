@@ -6,7 +6,7 @@
 defaults:
   - multigpu_default
 
-seed: 2021
+seed: 4206969
 
 logger:
   wandb:
@@ -16,8 +16,8 @@ trainer:
   gpus: '0'
 
 datamodule:
-  batch_size: 7
-  num_workers: 2
+  batch_size: 1
+  num_workers: 8
   pin_memory: True
   overlap: 3072
   persistent_workers: True

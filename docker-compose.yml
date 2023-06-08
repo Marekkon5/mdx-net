@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  mdx-net:
+    build: .
+    volumes:
+      - .:/mdx-net
+    
+    # Required for pytorch
+    shm_size: '1g'
+
+    # GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
