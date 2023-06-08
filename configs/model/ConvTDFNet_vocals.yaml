@@ -8,7 +8,7 @@ l: 3
 g: 48
 k: 3
 bn: 8
-bias: True
+bias: False
 
 # stft
 n_fft: 6144
