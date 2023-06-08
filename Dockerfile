@@ -4,6 +4,8 @@ FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 WORKDIR /mdx-net
 COPY . .
 
+RUN bash -c "rm data/train/.gitkeep; exit 0"
+
 # Dependencies
 RUN apt update && apt upgrade -y
 RUN apt install -y python3 python3-pip soundstretch ffmpeg
