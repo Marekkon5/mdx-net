@@ -2,12 +2,14 @@ version: '3'
 
 services:
   mdx-net:
+    stdin_open: true
+    tty: true  
     build: .
     volumes:
       - .:/mdx-net
     
     # Required for pytorch
-    shm_size: '1g'
+    shm_size: '4g'
 
     # GPU
     deploy:

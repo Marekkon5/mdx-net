@@ -3,6 +3,7 @@ from abc import ABCMeta, ABC
 from pathlib import Path
 
 import soundfile
+import multiprocessing
 from torch.utils.data import Dataset
 import torch
 import numpy as np
@@ -11,6 +12,7 @@ from tqdm import tqdm
 
 from src.utils.utils import load_wav
 
+MAX_RETRIES = 5
 
 def check_target_name(target_name, source_names):
     try:
@@ -35,6 +37,9 @@ def check_sample_rate(sr, sample_track):
         print('\t=> sr in Config file: {}, but sr of data: {}'.format(sr, sample_rate))
         exit(-1)
 
+# Multiprocessing load metadata in parallel fn
+def _load_metadata_task(path):
+    return (path, load_wav(os.path.join(path, 'vocals.wav')).shape[-1])
 
 class MusdbDataset(Dataset):
     __metaclass__ = ABCMeta
@@ -74,17 +79,25 @@ class MusdbTrainDataset(MusdbDataset):
         # collect all track names and their duration
         self.metadata = []
         raw_track_lengths = []   # for calculating epoch size
-        for i, (dataset, metadata_cache) in enumerate(tqdm(zip(datasets, metadata_caches))):
+        for i, (dataset, metadata_cache) in enumerate(zip(datasets, metadata_caches)):
             try:
                 metadata = torch.load(metadata_cache)
             except FileNotFoundError:
-                print('creating metadata for', dataset)
-                metadata = []
+                print('Creating metadata for', dataset)
+                # Get file list for metadata
+                files = []
                 for track_name in sorted(os.listdir(dataset)):
+                    # Ignore gitkeep
+                    if track_name.lower() == '.gitkeep':
+                        continue
                     if track_name not in valid_track_names:
                         track_path = dataset.joinpath(track_name)
-                        track_length = load_wav(track_path.joinpath('vocals.wav')).shape[-1]
-                        metadata.append((track_path, track_length))
+                        files.append(track_path)
+                # Load using multiprocessing
+                metadata = []
+                pool = multiprocessing.Pool(multiprocessing.cpu_count())
+                for m in tqdm(pool.imap_unordered(_load_metadata_task, files), total=len(files)):
+                    metadata.append(m)
                 torch.save(metadata, metadata_cache)
 
             self.metadata += metadata
@@ -94,12 +107,23 @@ class MusdbTrainDataset(MusdbDataset):
         self.epoch_size = sum(raw_track_lengths) // self.chunk_size
 
     def __getitem__(self, _):
+        # Load with retries
         sources = []
-        for source_name in self.source_names:
-            track_path, track_length = random.choice(self.metadata)   # random mixing between tracks
-            source = load_wav(track_path.joinpath(source_name + '.wav'),
-                              track_length=track_length, chunk_size=self.chunk_size)
-            sources.append(source)
+        for retry in range(MAX_RETRIES):
+            try:
+                for source_name in self.source_names:
+                    track_path, track_length = random.choice(self.metadata)   # random mixing between tracks
+                    source = load_wav(track_path.joinpath(source_name + '.wav'),
+                                    track_length=track_length, chunk_size=self.chunk_size)
+                    sources.append(source)
+                break
+            except Exception as e:
+                sources = []
+                print(f'Failed to load source, retry: {retry}/{MAX_RETRIES}, {e}')
+
+        # All failed to load
+        if len(sources) == 0:
+            raise Exception('Failed to load tracks!')
 
         mix = sum(sources)
 

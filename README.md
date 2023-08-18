@@ -8,13 +8,16 @@
 - Updated dependencies
 - Updated to PyTorch 2.x, CUDA 11.8 / 12
 - Added a Docker container (do NOT run without Docker or modifying the paths).
+- Multithreaded metadata creator
+- More error prone dataloader
 
 ### Additional config:
 - `configs/experiment/multigpu_vocals.yaml`: batch_size, num_workers, seed
 - `configs/datamodule/musdb18_hq.yaml`: validation_set
 - `configs/config.yaml`: wandb_key, data_dir
-- `.env`: wandb_key, data_dir
-
+- `configs/trainer/minimal.yaml`: gpus, resume_from_checkpoint, check_val_every_n_epoch
+- `configs/model/ConvTDFNet_vocals.yaml`: g, n_fft, dim_f
+- `.env`: wandb_key, data_dir **(can be ignored, doesn't matter)**
 
 ### Running:
 Requires [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
@@ -23,6 +26,21 @@ Put all folders with stems into `data/train`
 
 ```
 docker-compose up
+```
+
+### Running without Docker & without original conda:
+Install:
+```bash
+apt install -y python3 python3-pip soundstretch ffmpeg
+pip3 install -r requirements.txt
+pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121 --upgrade
+pip3 install --upgrade numpy
+pip3 install setuptools==57.0.0
+```
+
+Run:
+```bash
+python3 run.py experiment=multigpu_vocals model=ConvTDFNet_vocals
 ```
 
 # Original:
